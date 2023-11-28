@@ -1,4 +1,5 @@
 import tweepy
+import requests
 from textblob import TextBlob
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
@@ -19,11 +20,10 @@ team1 = "#Team1"
 team2 = "#Team2"
 match_hashtag = "#MatchHashtag"
 
-# Game Result (Manually inputted or fetched from another source)
-game_result = "Team1 wins"  # Example: "Team1 wins", "Team2 wins", "Draw"
+
 
 # Time Frame for Before and After the Game
-before_game_time = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')  # Example: 24 hours before now
+before_game_time = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d %H:%M:%S')  
 after_game_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
 # Fetching Tweets Before the Game
@@ -45,6 +45,38 @@ def analyze_sentiments(tweets):
         else:
             sentiments["negative"] += 1
     return sentiments
+
+def getGameResult(team1,team2):
+    # API credentials and endpoints 
+    api_endpoint = "https://api.football-data.org/v2/matches?status=FINISHED"
+    api_key = "*******"
+
+    # Headers for API request
+    headers = {"X-Auth-Token": api_key}
+
+    # Fetching game results
+    response = requests.get(api_endpoint, headers=headers)
+    data = response.json()
+
+
+    latest_match = data['matches'][0]
+    team1 = latest_match['homeTeam']['name']
+    team2 = latest_match['awayTeam']['name']
+    team1_goals = latest_match['score']['fullTime']['home']
+    team2_goals = latest_match['score']['fullTime']['away']
+
+    if team1_goals > team2_goals:
+        game_result = f"{team1} wins"
+    elif team2_goals > team1_goals:
+        game_result = f"{team2} wins"
+    else:
+        game_result = "Draw"
+
+    return game_result
+
+
+
+game_result = getGameResult("team1","team2")
 
 # Sentiment Analysis
 before_sentiments = analyze_sentiments(before_game_tweets)
