@@ -8,6 +8,7 @@ This project is designed to analyze the sentiment of Twitter users regarding foo
 - **Sentiment Analysis**: Analyzes the sentiment of tweets to categorize them as positive, negative, or neutral.
 - **Game Result Fetching**: Automatically retrieves the results of football games using a sports API.
 - **Comparative Analysis**: Compares the sentiment before and after the game with the actual game results.
+- **Prediction Model**: Can Predict the outcome of a game with 60% accuracy using a RandomForest classifier
 
 ## Prerequisites
 - Python 3.x
