@@ -4,6 +4,10 @@ import pandas as pd
 from textblob import TextBlob
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import accuracy_score, classification_report
 
 # Twitter API credentials
 api_key = '*****'
@@ -82,7 +86,82 @@ def read_csv_file(file_path):
     
     return df
 
+def SentimentDistribution(sentiments_over_time):
+    overall_sentiments = pd.Series(sentiments_over_time).value_counts().sort_index()
+    plt.pie(overall_sentiments, labels=['Negative', 'Neutral', 'Positive'], colors=['red', 'blue', 'green'], autopct='%1.1f%%')
+    plt.title('Overall Sentiment Distribution')
+    plt.show()
 
+def SentimentOverTime(df_time_based):
+    df_time_grouped = df_time_based.groupby(df_time_based['Time'].dt.hour).mean()
+    plt.plot(df_time_grouped.index, df_time_grouped['Sentiment'], marker='o', linestyle='-')
+    plt.title('Sentiment Over Time')
+    plt.xlabel('Hour of the Day')
+    plt.ylabel('Average Sentiment Score')
+    plt.ylim(0, 2)
+    plt.show()
+    
+def PrePostSentiment (before_counts_new,after_counts_new):
+    categories = ['Pre-Game', 'Post-Game']
+    plt.bar(categories, [before_counts_new.sum(), after_counts_new.sum()], color='grey')
+    plt.bar(categories, [before_counts_new[2], after_counts_new[2]], color='green', label='Positive')
+    plt.bar(categories, [before_counts_new[1], after_counts_new[1]], color='blue', bottom=[before_counts_new[2], after_counts_new[2]], label='Neutral')
+    plt.bar(categories, [before_counts_new[0], after_counts_new[0]], color='red', bottom=[before_counts_new[1]+before_counts_new[2], after_counts_new[1]+after_counts_new[2]], label='Negative')
+    plt.title('Comparison of Sentiment Pre- and Post-Game')
+    plt.legend()
+    plt.show()
+
+
+
+def UserEngagement(df_time_based):
+    tweet_counts = df_time_based['Time'].dt.hour.value_counts().sort_index()
+    plt.bar(tweet_counts.index, tweet_counts.values, color='orange')
+    plt.title('User Engagement Levels Over Time')
+    plt.xlabel('Hour of the Day')
+    plt.ylabel('Number of Tweets')
+    plt.show()
+
+def RandomForestModel(sentiment_texts,game_outcomes):
+    data = pd.DataFrame({
+    'text': sentiment_texts,
+    'game_outcome': game_outcomes
+    })
+
+    # Feature extraction using TF-IDF
+    vectorizer = TfidfVectorizer()
+    X = vectorizer.fit_transform(data['text'])
+
+    # Labels
+    y = data['game_outcome']
+
+    # Splitting the dataset into training and testing sets
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)
+
+    # Choosing a model (Random Forest in this case) and reducing its complexity
+    classifier = RandomForestClassifier(random_state=0, max_depth=3, n_estimators=10)
+
+    # Training the model
+    classifier.fit(X_train, y_train)
+
+    # Predictions
+    y_pred = classifier.predict(X_test)
+
+    # Evaluation
+    accuracy = accuracy_score(y_test, y_pred)
+    report = classification_report(y_test, y_pred)
+    print('Accuracy:', accuracy)
+    print('Classification Report:\n', report)
+
+    # Visualization: comparison of actual and predicted outcomes
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(8, 6))
+    plt.scatter(range(len(y_test)), y_test, color='blue', label='Actual Outcome', alpha=0.5)
+    plt.scatter(range(len(y_pred)), y_pred, color='red', label='Predicted Outcome', alpha=0.5)
+    plt.title('Actual vs Predicted Game Outcomes')
+    plt.ylabel('Game Outcome')
+    plt.legend()
+    plt.show()
 
 
 
@@ -115,6 +194,9 @@ def main():
 
         plt.suptitle(f'Sentiment Analysis of Tweets for {match_hashtag} ({game_result})')
         plt.show()
+
+        
+
 
     elif data_source == '2':
         
