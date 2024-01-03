@@ -87,12 +87,14 @@ def read_csv_file(file_path):
     return df
 
 def SentimentDistribution(sentiments_over_time):
+    #Allows to see the Sentiment distribution on a graph
     overall_sentiments = pd.Series(sentiments_over_time).value_counts().sort_index()
     plt.pie(overall_sentiments, labels=['Negative', 'Neutral', 'Positive'], colors=['red', 'blue', 'green'], autopct='%1.1f%%')
     plt.title('Overall Sentiment Distribution')
     plt.show()
 
 def SentimentOverTime(df_time_based):
+    #Allows to plot the average sentiment over time
     df_time_grouped = df_time_based.groupby(df_time_based['Time'].dt.hour).mean()
     plt.plot(df_time_grouped.index, df_time_grouped['Sentiment'], marker='o', linestyle='-')
     plt.title('Sentiment Over Time')
@@ -102,6 +104,7 @@ def SentimentOverTime(df_time_based):
     plt.show()
     
 def PrePostSentiment (before_counts_new,after_counts_new):
+    #Allows to plot thepre and post sentiment of a game
     categories = ['Pre-Game', 'Post-Game']
     plt.bar(categories, [before_counts_new.sum(), after_counts_new.sum()], color='grey')
     plt.bar(categories, [before_counts_new[2], after_counts_new[2]], color='green', label='Positive')
@@ -206,7 +209,7 @@ def main():
         # Read from CSV file
         file_path = input("Enter the path to the CSV file: ")
         tweets_df = read_csv_file(file_path)
-        before_game_tweets = tweets_df[tweets_df['Date'] < 'game_day_time']  # Replace 'game_day_time' with actual game day
+        before_game_tweets = tweets_df[tweets_df['Date'] < 'game_day_time']  # Replace 'game_day_time' with actual game day this is important
         after_game_tweets = tweets_df[tweets_df['Date'] >= 'game_day_time']
 
         # Analyze sentiments from CSV tweets
