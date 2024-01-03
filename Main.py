@@ -8,7 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, classification_report
-
+from sklearn.metrics import roc_curve, auc, precision_recall_curve, average_precision_score
 # Twitter API credentials
 api_key = '*****'
 api_secret = '*****'
@@ -162,6 +162,39 @@ def RandomForestModel(sentiment_texts,game_outcomes):
     plt.ylabel('Game Outcome')
     plt.legend()
     plt.show()
+
+        
+    # Predict probabilities for the positive outcome (which should be the second column if 'win' is encoded as 1)
+    y_proba = classifier.predict_proba(X_test)
+
+    # Calculate ROC curve and ROC AUC for the positive class ('win')
+    fpr, tpr, _ = roc_curve(y_test, y_proba[:, 1], pos_label='win')
+    roc_auc = auc(fpr, tpr)
+
+    # Calculate precision-recall curve and average precision for the positive class ('win')
+    precision, recall, _ = precision_recall_curve(y_test, y_proba[:, 1], pos_label='win')
+    average_precision = average_precision_score(y_test, y_proba[:, 1], pos_label='win')
+
+    # Plot ROC curve
+    plt.figure(figsize=(10, 5))
+    plt.subplot(1, 2, 1)
+    plt.plot(fpr, tpr, color='darkorange', lw=2, label='ROC curve (area = %0.2f)' % roc_auc)
+    plt.plot([0, 1], [0, 1], color='navy', lw=2, linestyle='--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic')
+    plt.legend(loc="lower right")
+
+    # Plot Precision-Recall curve
+    plt.subplot(1, 2, 2)
+    plt.plot(recall, precision, color='green', lw=2, label='Precision-Recall curve (area = %0.2f)' % average_precision)
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.title('Precision-Recall Curve')
+    plt.legend(loc="lower left")
+
+    plt.show()
+
 
 
 
